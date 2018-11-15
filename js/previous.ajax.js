@@ -32,7 +32,7 @@
         })
         // If AJAX succeeds:
         .done(function(object) {
-            console.log(object);
+            build_post(object)
         })
         // If AJAX fails:
         .fail(function(){
@@ -43,6 +43,53 @@
             console.log('AJAX complete');
         });
 
+
+        function build_post(object) {
+            var date = new Date(object.date);
+            var previous_post_content =
+                '<div class="generated">' +
+                '<div class="wrap">' +
+                '<div class="content-area">' +
+                '<div class="site-main">' +
+                '<article class="post hentry" data-id="' + object.id + '">' +
+                '<header class="entry-header">' +
+                '<div class="entry-meta">' +
+                '<span class="posted-on">' +
+                '<span class="screen-reader-text">Posted on</span> ' +
+                '<a href="' + object.link + '" rel="bookmark">' +
+                '<time class="entry-date published" datetime="' + date + '">' + date.toDateString() + '</time>' +
+                '</a>' +
+                '</span>' +
+                '<span class="byline"> by <span class="author vcard">' +
+                'Author Name' +
+                '</span>' +
+                '</span>' +
+                '</div><!-- .entry-meta -->' +
+                '<h1 class="entry-title">' + object.title.rendered + '</h1>' +
+                '</header><!-- .entry-header -->' +
+                '<div class="entry-content">' +
+                object.content.rendered +
+                '</div><!-- .entry-content -->' +
+                '</article><!-- #post-## -->' +
+                '</div><!-- .site-main -->' +
+                '</div><!-- .content-area -->' +
+                '</div><!-- .wrap -->' +
+                '</div><!-- .generated -->' +
+                '<nav class="navigation post-navigation load-previous" role="navigation">' +
+                '<span class="nav-subtitle">Previous post</span>' +
+                '<div class="nav-links">' +
+                '<div class="nav-previous">' +
+                '<a href="javascript:void(0)" data-id="' + object.previous_post_ID + '">' +
+                object.previous_post_title +
+                '</a>' +
+                '</nav>';
+
+            // Append related posts to the #related-posts container
+            $('.post-navigation').replaceWith(previous_post_content);
+
+            // Reininitialize the previous post trigger on new content.
+            previous_post_trigger();
+        }
     }
 
 })(jQuery);
