@@ -23,7 +23,7 @@
         // Get the previous post ID from the clicked trigger above.
         var previous_post_ID = $(this).attr('data-id');
         // Build the resource request URL for the REST API.
-        var json_url = rest_url + 'posts/' + previous_post_ID;
+        var json_url = rest_url + 'posts/' + previous_post_ID + '?_embed=true';
 
         // Run AJAX on the resource request URL
         $.ajax({
@@ -32,7 +32,7 @@
         })
         // If AJAX succeeds:
         .done(function(object) {
-            build_post(object)
+            the_previous_post(object)
         })
         // If AJAX fails:
         .fail(function(){
@@ -43,11 +43,48 @@
             console.log('AJAX complete');
         });
 
+    } // END get_previous_post()
 
-        function build_post(object) {
+    function the_previous_post(object) {
+
+        // Get the featured image ID (0 if no featured image):
+        var featured_img_ID = object.featured_media;
+
+        // Create an empty container for theoretical featured image.
+        var feat_image;
+
+        // Grab the data from get_ajax above,
+        // find featured image source URL,
+        // populate feat_image variable with featured image HTML output.
+        function get_featured_image() {
+            if (featured_img_ID === 0) {
+                feat_image = '';
+            } else {
+                var featured_object = object._embedded['wp:featuredmedia'][0];
+                var img_large = '';
+                var img_width = featured_object.media_details.sizes.full.width;
+                var img_height = featured_object.media_details.sizes.full.height;
+                if (featured_object.media_details.sizes.hasOwnProperty("large")) {
+                    img_large = featured_object.media_details.sizes.large.source_url +  ' 1024w, ';
+                }
+                feat_image = '<div class="single-featured-image-header">' +
+                             '<img src="' + featured_object.media_details.sizes.full.source_url + '" ' +
+                             'width="' + img_width + '" ' +
+                             'height="' + img_height + '" ' +
+                             'class="attachment-twentyseventeen-featured-image size-twentyseventeen-featured-image wp-post-image" ' +
+                             'alt="" ' +
+                             'srcset="' + featured_object.media_details.sizes.full.source_url + ' ' + img_width + 'w, ' + img_large + featured_object.media_details.sizes.medium.source_url + ' 300w" ' +
+                             'sizes="100vw">' +
+                             '</div>';
+            }
+            return feat_image;
+        }
+
+        function build_post() {
             var date = new Date(object.date);
             var previous_post_content =
                 '<div class="generated">' +
+                get_featured_image() +
                 '<div class="wrap">' +
                 '<div class="content-area">' +
                 '<div class="site-main">' +
@@ -61,7 +98,7 @@
                 '</a>' +
                 '</span>' +
                 '<span class="byline"> by <span class="author vcard">' +
-                'Author Name' +
+                object._embedded.author[0].name +
                 '</span>' +
                 '</span>' +
                 '</div><!-- .entry-meta -->' +
@@ -90,6 +127,9 @@
             // Reininitialize the previous post trigger on new content.
             previous_post_trigger();
         }
+
+        // Run the menagerie.
+        build_post()
     }
 
 })(jQuery);
